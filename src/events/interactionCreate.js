@@ -12,6 +12,13 @@ module.exports = {
 			return;
 		}
 
+		if(command.developer && interaction.user.id !== "834638969945587712"){
+			return await interaction.reply({
+				content: "This command can only be used by developer.",
+				ephemeral: true
+			})
+		}
+
 		try {
 			await command.execute(interaction);
 		} catch (error) {

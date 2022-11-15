@@ -2,14 +2,17 @@
   "name": "dailyshots",
   "version": "1.0.0",
   "description": "",
-  "main": "dailyshots.js",
+  "main": "src/dailyshots.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node ."
   },
   "keywords": [],
-  "author": "",
+  "author": "Taufiq Zarif",
   "license": "ISC",
   "dependencies": {
+    "chalk": "^5.1.2",
+    "discord-api-types": "^0.37.18",
     "discord.js": "^14.6.0",
     "dotenv": "^16.0.3",
     "mongoose": "^6.7.2"

@@ -5,6 +5,9 @@ module.exports = {
         .setName('ping')
         .setDescription('Replies with Pong!'),
     async execute(interaction) {
+        const message = await interaction.deferReply({
+            fetchReply: true
+        });
         await interaction.reply('Pong!');
     },
 };
