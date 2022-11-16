@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "src/dailyshots.js",
-  "type": "module",
   "scripts": {
     "test": "node ."
   },

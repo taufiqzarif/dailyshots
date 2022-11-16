@@ -8,6 +8,6 @@ module.exports = {
         const message = await interaction.deferReply({
             fetchReply: true
         });
-        await interaction.reply('Pong!');
+        await interaction.editReply('Pong!');
     },
 };
