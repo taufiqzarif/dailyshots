@@ -28,7 +28,16 @@ client.on('messageCreate', message => {
 
     message.channel.messages.fetch({limit:1}).then(msg=>{
         //let firstAuthor = msg.author.id;
-        console.log(msg.content);
+        let arr = [];
+        msg.map(m => {
+            arr.push(m.content);
+            arr.push(m.author.id);
+            arr.push(m.author.username);
+
+        })
+        console.log("Array: " + arr);
+        console.log(msg.first().attachments.first().contentType);
+        //console.log(msg.attachments.map(k => console.log(k)));
         if(message.author.id) {
             console.log('Delete message because sent 2 messages in a row');
             message.delete();
