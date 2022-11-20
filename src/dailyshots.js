@@ -112,4 +112,6 @@ client.on("messageCreate", (message) => {
 
 // Log in to Discord with your client's token
 client.login(token);
-connect()
+(async () => {
+    await connect(dbToken).catch(err => console.error(err));
+})();
