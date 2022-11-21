@@ -4,12 +4,12 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('ping')
         .setDescription('Replies with Pong!'),
-    async execute(interaction) {
+    async execute(interaction, client) {
         const message = await interaction.deferReply({
             fetchReply: true
         });
-        const latency = Math.abs(Date.now() - interaction.createdTimestamp);
-        const ping = interaction.client.ws.ping;
-        await interaction.editReply({content: `Latency🏓: ${latency}ms\nPing🏓: ${ping}ms`});
+        const ping = message.createdTimestamp - interaction.createdTimestamp;
+        const latency = client.ws.ping;
+        await interaction.editReply({content: `Client Ping🏓: ${ping}ms\nAPI Latency🏓: ${latency}ms`});
     },
 };
