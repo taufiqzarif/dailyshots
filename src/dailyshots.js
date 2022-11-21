@@ -1,9 +1,11 @@
 // Require the necessary discord.js classes
 require("dotenv").config();
+const mongoose = require("mongoose");
+const User = require("./schema/user");
 const moment = require("moment"); // require
 const fs = require("node:fs");
 const { Client, Collection, GatewayIntentBits } = require("discord.js");
-const {connect} = require('mongoose');
+const { connect } = require("mongoose");
 const { token, clientId, guildId, dbToken } = process.env;
 
 // Create a new client instance
@@ -28,9 +30,10 @@ client.eventHandler();
 client.commandHandler();
 
 client.on("messageCreate", (message) => {
-    if (message.channel.id != "1042860383720968242" && !message.author.bot) return;
+    if (message.channel.id != "1042860383720968242" && !message.author.bot)
+        return;
 
-    message.channel.messages.fetch({ limit: 1 }).then((msg) => {
+    message.channel.messages.fetch({ limit: 1 }).then(async (msg) => {
         // NOTE: References for access collection
         //console.log(msg);
         // console.log(msg.first().content);
@@ -60,7 +63,6 @@ client.on("messageCreate", (message) => {
         if (attSize === 0) {
             return;
         } else {
-
             // WIP: Time checking
             // Problem: Not all user have the same timezone.
             // Possible solution 1: Assign a global timezone for discord bot.
@@ -74,16 +76,35 @@ client.on("messageCreate", (message) => {
 
             // Solution 1B: Using moment
             var currentDate = moment();
-            console.log(currentDate);
+            // try {
+            //     console.log(moment().add(1, "days").diff(currentDate.toString()));
+            //     console.log("Works.");
+            // }
+            // catch(err){
+            //     console.error(err);
+            // }
+            //console.log(typeof(currentDate));
+            //JSON.stringify(currentDate);
+            let userData = await User.findOne({
+                userId: msg.first().author.id,
+            });
+            if (userData) {
+                const updateUserLastSent = await User.findOne({
+                    userId: msg.first().author.id,
+                }).updateOne({ lastSent: currentDate.toISOString() });
+                console.log("Updated last sent!");
+            } else {
+                return;
+            }
 
-            setTimeout(() => {
-                var minuteDate = moment();
-                console.log("message sent: " + currentDate.format("h:mm:ssA"));
-                console.log("time now: " + minuteDate.format("h:mm:ssA"));
-                console.log(
-                    "time passed: " + moment().add(1, "days").diff(currentDate)
-                );
-            }, 1000); //60000
+            // setTimeout(() => {
+            //     var minuteDate = moment();
+            //     console.log("message sent: " + currentDate.format("h:mm:ssA"));
+            //     console.log("time now: " + minuteDate.format("h:mm:ssA"));
+            //     console.log(
+            //         "time passed: " + moment().add(1, "days").diff(currentDate)
+            //     );
+            // }, 1000); //60000
 
             // DONE: Check user's message has content type attachment image/png or image/jpeg
             const attContentType = msg.first().attachments.first().contentType;
@@ -92,26 +113,17 @@ client.on("messageCreate", (message) => {
                 console.log("This is png");
             } else if (attContentType === "image/jpeg") {
                 console.log("This is jpg");
-            }
-            else if (attContentType === "video/mp4") {
+            } else if (attContentType === "video/mp4") {
                 console.log("This is mp4");
             }
+            let userLastSent = userData.lastSent;
+            console.log("Time passed: " + moment().add(1, "days").diff(userLastSent));
         }
-
-        //const attContentType = msg.first().attachments.first().contentType;
-
-        //console.log(msg.first().attachments.first().contentType);
-
-        //console.log(msg.attachments.map(k => console.log(k)));
-        // if(message.author.id) {
-        //     console.log('Delete message because sent 2 messages in a row');
-        //     message.delete();
-        // }
     });
 });
 
 // Log in to Discord with your client's token
 client.login(token);
 (async () => {
-    await connect(dbToken).catch(err => console.error(err));
+    await connect(dbToken).catch((err) => console.error(err));
 })();
