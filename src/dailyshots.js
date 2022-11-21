@@ -2,7 +2,8 @@
 require("dotenv").config();
 const mongoose = require("mongoose");
 const User = require("./schema/user");
-const moment = require("moment"); // require
+const chalk = require("chalk");
+const moment = require("moment");
 const fs = require("node:fs");
 const { Client, Collection, GatewayIntentBits } = require("discord.js");
 const { connect } = require("mongoose");
@@ -59,7 +60,7 @@ client.on("messageCreate", (message) => {
 
         //TODO: Check if there is attachment in the message (using size)
         const attSize = msg.first().attachments.size;
-        console.log(attSize);
+        //console.log(attSize);
         if (attSize === 0) {
             return;
         } else {
@@ -76,26 +77,38 @@ client.on("messageCreate", (message) => {
 
             // Solution 1B: Using moment
             var currentDate = moment();
-            // try {
-            //     console.log(moment().add(1, "days").diff(currentDate.toString()));
-            //     console.log("Works.");
-            // }
-            // catch(err){
-            //     console.error(err);
-            // }
-            //console.log(typeof(currentDate));
-            //JSON.stringify(currentDate);
+            const userId = msg.first().author.id;
+            const userName = msg.first().author.username;
+
             let userData = await User.findOne({
-                userId: msg.first().author.id,
+                userId: userId,
             });
-            if (userData) {
-                const updateUserLastSent = await User.findOne({
-                    userId: msg.first().author.id,
-                }).updateOne({ lastSent: currentDate.toISOString() });
-                console.log("Updated last sent!");
-            } else {
+            var checkIsNextDay = await getTimeDiff(userId);
+            console.log(chalk.red(checkIsNextDay));
+            if (userData.isShots && checkIsNextDay < 60000) {
+                console.log(chalk.magenta("Already shots today!"));
                 return;
             }
+            if (!userData) {
+                console.log(
+                    chalk.magenta(
+                        `User ID: ${userId} not found!\nUsername: ${userName}`
+                    )
+                );
+                console.log(chalk.blue(`[Adding ${userName} to db...]`));
+                userData = await User.create({
+                    _id: mongoose.Types.ObjectId(),
+                    userId: userId,
+                    streak: 0,
+                    lastSent: null,
+                    isShots: false,
+                });
+            }
+
+            const updateUserLastSent = await User.findOne({
+                userId: userId,
+            }).updateOne({ lastSent: currentDate.toISOString() });
+            console.log("Updated last sent!");
 
             // setTimeout(() => {
             //     var minuteDate = moment();
@@ -116,11 +129,55 @@ client.on("messageCreate", (message) => {
             } else if (attContentType === "video/mp4") {
                 console.log("This is mp4");
             }
-            let userLastSent = userData.lastSent;
-            console.log("Time passed: " + moment().add(1, "days").diff(userLastSent));
+
+            console.log(chalk.red(checkIsNextDay));
+            if (checkIsNextDay > 60000) {
+                console.log(chalk.cyan(checkIsNextDay));
+                console.log("More than 24 hours!");
+                if (userData.isShots) {
+                    const updateUserIsShots = await User.findOne({
+                        userId: userId,
+                    }).updateOne({ isShots: false });
+                }
+                if (userData.streak != 0) {
+                    const updateUserStreak = await User.findOne({
+                        userId: userId,
+                    }).updateOne({ $inc: { streak: -1 } });
+                }
+            } else {
+                console.log(chalk.cyan(checkIsNextDay));
+                console.log("Less than 24 hours!");
+                console.log(chalk.yellow("Updating isShots ... "));
+                const updateUserIsShots = await User.findOne({
+                    userId: userId,
+                }).updateOne({ isShots: true });
+                console.log(chalk.green("Updated isShots!"));
+
+                console.log(chalk.yellow("Updating streak ... "));
+                const updateUserStreak = await User.findOne({
+                    userId: userId,
+                }).updateOne({ $inc: { streak: 1 } });
+                console.log(chalk.green("Updated streak!"));
+            }
         }
     });
 });
+
+async function getTimeDiff(userId) {
+    var currentTime = moment();
+    let userData = await User.findOne({
+        userId: userId,
+    });
+    let userLastSent = userData.lastSent;
+    console.log(`User last sent: ${userLastSent}`);
+
+    // Testing purposes
+    //var timeDiff = moment().add(1, "days").diff(userLastSent);
+    //console.log("Time passed: " + moment().add(1, "days").diff(userLastSent));
+
+    var timeDiff = currentTime.diff(userLastSent);
+    return timeDiff;
+}
 
 // Log in to Discord with your client's token
 client.login(token);
