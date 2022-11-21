@@ -58,124 +58,119 @@ client.on("messageCreate", (message) => {
         // })
         //console.log("Array: " + arr);
 
-        //TODO: Check if there is attachment in the message (using size)
+        // Check if there is attachment in the message by using size properties
         const attSize = msg.first().attachments.size;
-        //console.log(attSize);
+
         if (attSize === 0) {
             return;
         } else {
-            // WIP: Time checking
-            // Problem: Not all user have the same timezone.
-            // Possible solution 1: Assign a global timezone for discord bot.
-            // Possible solution 2: Store user's timezone in db and check if the time is still within the 24 hours by comparing the current time and last shots sent.
+            // ? Check hidden imposter file OR limit size to only one attachment
+            if (attSize > 1) {
+                let isImposter = false;
+                msg.first().attachments.map((att) => {
+                    if (
+                        att.contentType != "image/png" &&
+                        att.contentType != "image/jpeg" &&
+                        att.contentType != "video/mp4" &&
+                        att.contentType != "video/quicktime"
+                    ) {
+                        console.log(chalk.red("IMPOSTER FOUND!"));
+                        isImposter = true;
+                        message.delete();
+                    }
+                });
+                if (isImposter) {
+                    return;
+                }
+            }
 
-            // Solution 1A: Using Date()
-            // var d = new Date();
-            // console.log(d.toLocaleTimeString());
-            // console.log(d.toLocaleString());
-            // console.log(d.toLocaleDateString());
+            // Check user's message has content type attachment image/png or image/jpeg or video/mp4
+            const attContentType = msg.first().attachments.first().contentType;
+            console.log(attContentType);
+            if (
+                attContentType != "image/png" &&
+                attContentType != "image/jpeg" &&
+                attContentType != "video/mp4" &&
+                attContentType != "video/quicktime"
+            ) {
+                console.log(chalk.red("INVALID FORMAT!"));
+                message.delete();
+                return;
+            }
 
-            // Solution 1B: Using moment
-            var currentDate = moment();
+            // Time Logic System
+            let currentDate = moment();
             const userId = msg.first().author.id;
             const userName = msg.first().author.username;
 
             let userData = await User.findOne({
                 userId: userId,
             });
-            var checkIsNextDay = await getTimeDiff(userId);
-            console.log(chalk.red(checkIsNextDay));
-            if (userData.isShots && checkIsNextDay < 60000) {
-                console.log(chalk.magenta("Already shots today!"));
-                return;
-            }
+
             if (!userData) {
                 console.log(
                     chalk.magenta(
                         `User ID: ${userId} not found!\nUsername: ${userName}`
                     )
                 );
-                console.log(chalk.blue(`[Adding ${userName} to db...]`));
-                userData = await User.create({
+                console.log(chalk.yellow(`[Adding ${userName} to db...]`));
+                userData = await new User({
                     _id: mongoose.Types.ObjectId(),
                     userId: userId,
                     streak: 0,
                     lastSent: null,
                     isShots: false,
                 });
+                await userData.save().catch(console.error);
+                console.log(chalk.green(`[ADDED ${userName}]`));
             }
 
+            let checkIsNextDay = await getTimeDiff(userId);
+            console.log(chalk.magenta(checkIsNextDay));
+
+            if (checkIsNextDay < 60000 && userData.lastSent != null) {
+                console.log(chalk.magenta("Already sent shots today!"));
+                return;
+            }
+
+            // Immediately updates the user's last sent shots in db
             const updateUserLastSent = await User.findOne({
                 userId: userId,
             }).updateOne({ lastSent: currentDate.toISOString() });
-            console.log("Updated last sent!");
 
-            // setTimeout(() => {
-            //     var minuteDate = moment();
-            //     console.log("message sent: " + currentDate.format("h:mm:ssA"));
-            //     console.log("time now: " + minuteDate.format("h:mm:ssA"));
-            //     console.log(
-            //         "time passed: " + moment().add(1, "days").diff(currentDate)
-            //     );
-            // }, 1000); //60000
-
-            // DONE: Check user's message has content type attachment image/png or image/jpeg
-            const attContentType = msg.first().attachments.first().contentType;
-            console.log(attContentType);
-            if (attContentType === "image/png") {
-                console.log("This is png");
-            } else if (attContentType === "image/jpeg") {
-                console.log("This is jpg");
-            } else if (attContentType === "video/mp4") {
-                console.log("This is mp4");
-            }
-
-            console.log(chalk.red(checkIsNextDay));
-            if (checkIsNextDay > 60000) {
-                console.log(chalk.cyan(checkIsNextDay));
-                console.log("More than 24 hours!");
-                if (userData.isShots) {
-                    const updateUserIsShots = await User.findOne({
-                        userId: userId,
-                    }).updateOne({ isShots: false });
-                }
+            // Reward & Penalty System
+            if (checkIsNextDay > 120000) {
+                // Penalize the user (Did not send shots more than 24 hours)
+                console.log(chalk.red("USER PENALIZED!"));
                 if (userData.streak != 0) {
                     const updateUserStreak = await User.findOne({
                         userId: userId,
-                    }).updateOne({ $inc: { streak: -1 } });
+                    }).updateOne({ streak: 0 });
                 }
-            } else {
-                console.log(chalk.cyan(checkIsNextDay));
-                console.log("Less than 24 hours!");
-                console.log(chalk.yellow("Updating isShots ... "));
-                const updateUserIsShots = await User.findOne({
-                    userId: userId,
-                }).updateOne({ isShots: true });
-                console.log(chalk.green("Updated isShots!"));
-
-                console.log(chalk.yellow("Updating streak ... "));
+            } else if (checkIsNextDay > 60000 || userData.lastSent == null) {
+                // Reward the user (Sent shots within 24 hours)
+                console.log(chalk.green("USER REWARDED!"));
                 const updateUserStreak = await User.findOne({
                     userId: userId,
                 }).updateOne({ $inc: { streak: 1 } });
-                console.log(chalk.green("Updated streak!"));
             }
         }
     });
 });
 
 async function getTimeDiff(userId) {
-    var currentTime = moment();
+    let currentTime = moment();
     let userData = await User.findOne({
         userId: userId,
     });
     let userLastSent = userData.lastSent;
-    console.log(`User last sent: ${userLastSent}`);
+    //console.log(`User last sent: ${userLastSent}`);
 
     // Testing purposes
-    //var timeDiff = moment().add(1, "days").diff(userLastSent);
+    //let timeDiff = moment().add(1, "days").diff(userLastSent);
     //console.log("Time passed: " + moment().add(1, "days").diff(userLastSent));
 
-    var timeDiff = currentTime.diff(userLastSent);
+    let timeDiff = currentTime.diff(userLastSent);
     return timeDiff;
 }
 
