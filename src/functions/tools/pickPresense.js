@@ -5,7 +5,7 @@ module.exports = (client) => {
         const options = [
             {
                 type: ActivityType.Watching,
-                text: 'alyph#0001 develop',
+                text: 'Developed by alyph#0001',
                 url: "https://www.github.com/taufiqzarif"
             },
         ];
