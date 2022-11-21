@@ -1,26 +1,25 @@
-const {SlashCommandBuilder, EmbedBuilder} = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const mongoose = require("mongoose");
+const User = require("../../schema/user");
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('streak')
-        .setDescription('Show your current streak'),
+        .setName("streak")
+        .setDescription("Show your current streak"),
     async execute(interaction, client) {
-
-        const channel = await client.channels.cache.get('1042860383720968242');
-        channel.messages.fetch({ limit: 2 }).then(messages => {
-            console.log(`Received ${messages.size} messages`);
-            //Iterate through the messages here with the variable "messages".
-            messages.forEach(message => console.log(message.attachments.first()));
-          })
-
         const message = await interaction.deferReply({
             fetchReply: true,
         });
-
-        const streakCount = '2';
+        let newMessage = "";
+        let userData = await User.findOne({ userId: interaction.user.id });
+        if (!userData) {
+            newMessage = `Could not find ${interaction.user.id} in database!`;
+        } else {
+            newMessage = `Your current streak is 🎉 ${userData.streak} days`;
+        }
 
         await interaction.editReply({
-            content: `Your current streak is ${streakCount} days`
-        })
-    }
-}
+            content: newMessage,
+        });
+    },
+};
