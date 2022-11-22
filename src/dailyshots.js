@@ -31,7 +31,7 @@ client.eventHandler();
 client.commandHandler();
 
 client.on("messageCreate", (message) => {
-    if (message.channel.id != "1042860383720968242" && !message.author.bot)
+    if ((message.channel.id != process.env.channelId || message.channel.id != process.env.channelId2) && !message.author.bot)
         return;
 
     message.channel.messages.fetch({ limit: 1 }).then(async (msg) => {
