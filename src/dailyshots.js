@@ -128,7 +128,7 @@ client.on("messageCreate", (message) => {
             let checkIsNextDay = await getTimeDiff(userId);
             console.log(chalk.magenta(checkIsNextDay));
 
-            if (checkIsNextDay < 57000000 && userData.lastSent != null) {
+            if (checkIsNextDay < 86400000 && userData.lastSent != null) {
                 console.log(chalk.magenta("Already sent shots today!"));
                 return;
             }
@@ -139,15 +139,15 @@ client.on("messageCreate", (message) => {
             }).updateOne({ lastSent: currentDate.toISOString() });
 
             // Reward & Penalty System
-            if (checkIsNextDay > 86000000) {
-                // Penalize the user (Did not send shots more than 24 hours)
+            if (checkIsNextDay > 172800000) {
+                // Penalize the user (Did not send shots more than 48 hours)
                 console.log(chalk.red("USER PENALIZED!"));
                 if (userData.streak != 0) {
                     const updateUserStreak = await User.findOne({
                         userId: userId,
                     }).updateOne({ streak: 0 });
                 }
-            } else if (checkIsNextDay > 57000000 || userData.lastSent == null) {
+            } else if (checkIsNextDay > 86400000 || userData.lastSent == null) {
                 // Reward the user (Sent shots within 24 hours)
                 console.log(chalk.green("USER REWARDED!"));
                 const updateUserStreak = await User.findOne({
