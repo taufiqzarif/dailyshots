@@ -1,14 +1,17 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
-const mongoose = require("mongoose");
-const User = require("../../schema/user");
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const mongoose = require('mongoose');
+const User = require('../../schema/user');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName("testdb")
-        .setDescription("[ADMIN] Test the db")
+        .setName('testdb')
+        .setDescription('[ADMIN] Test the db')
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     async execute(interaction, client) {
-        await interaction.deferReply();
+        await interaction.deferReply({
+            fetchReply: true,
+            ephemeral: true,
+        });
         let userProfile = await User.findOne({ userId: interaction.user.id });
         if (!userProfile) {
             userProfile = await new User({

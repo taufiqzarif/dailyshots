@@ -1,18 +1,18 @@
-const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName("setup")
-        .setDescription("[ADMIN] Setup DailyShots")
+        .setName('setup')
+        .setDescription('[ADMIN] Setup DailyShots')
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     async execute(interaction, client) {
         const message = await interaction.deferReply({
             fetchReply: true,
+            ephemeral: true,
         });
 
         await interaction.editReply({
-            content: "Add streak ADMIN",
-            ephemeral: true,
+            content: 'Add streak ADMIN',
         });
     },
 };
