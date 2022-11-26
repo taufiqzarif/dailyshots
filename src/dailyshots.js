@@ -31,7 +31,7 @@ client.eventHandler();
 client.commandHandler();
 
 client.on("messageCreate", (message) => {
-    if (message.channel.id != "1039459742961115136" && !message.author.bot)
+    if ((message.channel.id != process.env.channelId || message.channel.id != process.env.channelId2) && !message.author.bot)
         return;
 
     message.channel.messages.fetch({ limit: 1 }).then(async (msg) => {
@@ -119,7 +119,6 @@ client.on("messageCreate", (message) => {
                     userId: userId,
                     streak: 0,
                     lastSent: null,
-                    isShots: false,
                 });
                 await userData.save().catch(console.error);
                 console.log(chalk.green(`[ADDED ${userName}]`));
@@ -128,7 +127,8 @@ client.on("messageCreate", (message) => {
             let checkIsNextDay = await getTimeDiff(userId);
             console.log(chalk.magenta(checkIsNextDay));
 
-            if (checkIsNextDay < 86400000 && userData.lastSent != null) {
+            // Check if user already sent shots within 24 hours
+            if (checkIsNextDay < 86400000 && (userData.lastSent != null && userData.lastSent != "")) {
                 console.log(chalk.magenta("Already sent shots today!"));
                 return;
             }
@@ -147,7 +147,7 @@ client.on("messageCreate", (message) => {
                         userId: userId,
                     }).updateOne({ streak: 0 });
                 }
-            } else if (checkIsNextDay > 86400000 || userData.lastSent == null) {
+            } else {
                 // Reward the user (Sent shots within 24 hours)
                 console.log(chalk.green("USER REWARDED!"));
                 const updateUserStreak = await User.findOne({
