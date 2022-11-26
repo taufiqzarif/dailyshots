@@ -22,13 +22,20 @@ module.exports = {
             fetchReply: true,
             ephemeral: true,
         });
-        const argUsername = interaction.options.get('username');
-        const argNewNick = interaction.options.get('nick');
-        const member = interaction.guild.members.cache.get(argUsername.value);
-        console.log(member);
-        await member.setNickname(
-            `${argUsername.user.username} ${argNewNick.value}`
-        );
+
+        try {
+            const argUsername = interaction.options.get('username');
+            const argNewNick = interaction.options.get('nick');
+            const member = interaction.guild.members.cache.get(
+                argUsername.value
+            );
+            //console.log(member);
+            await member.setNickname(
+                `${argUsername.user.username} ${argNewNick.value}`
+            );
+        } catch (err) {
+            console.log(err);
+        }
 
         await interaction.editReply({
             content: 'Nickname changed!',

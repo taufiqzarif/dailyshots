@@ -7,7 +7,7 @@ const moment = require("moment");
 const fs = require("node:fs");
 const { Client, Collection, GatewayIntentBits } = require("discord.js");
 const { connect } = require("mongoose");
-const { token, clientId, guildId, dbToken } = process.env;
+const { token, clientId, guildId, dbToken, channelId, channelId2 } = process.env;
 
 // Create a new client instance
 const client = new Client({
@@ -31,7 +31,7 @@ client.eventHandler();
 client.commandHandler();
 
 client.on("messageCreate", (message) => {
-    if ((message.channel.id != process.env.channelId || message.channel.id != process.env.channelId2) && !message.author.bot)
+    if (((message.channel.id != process.env.channelId) || (message.channel.id != process.env.channelId2)) && !message.author.bot)
         return;
 
     message.channel.messages.fetch({ limit: 1 }).then(async (msg) => {

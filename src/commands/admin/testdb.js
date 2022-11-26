@@ -19,7 +19,6 @@ module.exports = {
                 userId: interaction.user.id,
                 streak: 0,
                 lastSent: null,
-                isShots: false,
             });
             await userProfile.save().catch(console.error);
             await interaction.editReply({
@@ -28,7 +27,7 @@ module.exports = {
             console.log(userProfile);
         } else {
             await interaction.editReply({
-                content: `Userid: ${userProfile.userId}\nStreak: ${userProfile.streak}\nLast Sent: ${userProfile.lastSent}\nIs Shots: ${userProfile.isShots}`,
+                content: `Userid: ${userProfile.userId}\nStreak: ${userProfile.streak}\nLast Sent: ${userProfile.lastSent}\n`,
             });
         }
     },

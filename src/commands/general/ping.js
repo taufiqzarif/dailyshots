@@ -6,7 +6,8 @@ module.exports = {
         .setDescription('Replies with Pong!'),
     async execute(interaction, client) {
         const message = await interaction.deferReply({
-            fetchReply: true
+            fetchReply: true,
+            ephemeral: true,
         });
         const ping = message.createdTimestamp - interaction.createdTimestamp;
         const latency = client.ws.ping;

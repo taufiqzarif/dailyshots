@@ -7,6 +7,7 @@ module.exports = {
     async execute(interaction) {
         const message = await interaction.deferReply({
             fetchReply: true,
+            ephemeral: true,
         });
         const newMessage = interaction.user.tag;
         await interaction.editReply({ content: newMessage, ephemeral: true });
