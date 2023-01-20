@@ -33,5 +33,5 @@ Introducing DailyShots, a Discord bot that functions similar to Snapchat. With t
 
 ## Disclaimer
 
-**Please be aware that this bot will not be receiving any further updates. I am currently working on an improved version, DailyShots V2, which will have additional features and better functionality. However, the development of DailyShots V2 is currently a private project and it will not be publicly released.**
+**Please be aware that this bot will not be receiving any further updates and it may contain certain flaws. I am currently working on an improved version, DailyShots V2, which will have additional features and better functionality. However, the development of DailyShots V2 is currently a private project and it will not be publicly released.**
 
